@@ -1,7 +1,0 @@
-/* XPM */
-static char * test_xpm[] = {
-"2 2 2 1",
-" 	c #BD3ACF",
-".	c #CCE042",
-" .",
-". "};

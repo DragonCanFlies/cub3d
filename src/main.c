@@ -6,26 +6,87 @@
 /*   By: latabagl <latabagl@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 09:43:29 by latabagl          #+#    #+#             */
-/*   Updated: 2025/12/09 23:13:25 by latabagl         ###   ########.fr       */
+/*   Updated: 2025/12/10 16:57:46 by latabagl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
+int		is_wall(t_game *game, double x, double y)
+{
+	int col = floor(x / TILESIZE);
+	int row = floor(y / TILESIZE);
+	if (game->map[row][col] == '1')
+		return (1);
+	return (0);
+}
+
+// void	draw_line(t_game *game)
+// {
+// 	int	i = 0;
+
+// 	while (!is_wall(game, game->player.px, game->player.py - i))
+// 	{
+// 		mlx_put_image_to_window(game->mlx, game->win, game->red_px,
+// 		game->player.px + 3, game->player.py - i);
+// 		i++;
+// 	}
+// }
+
+void	draw_line(t_game *game)
+{
+	int checks = game->player.py / 64;
+	while (checks--)
+	{
+		if (is_wall(game, game->player.px, checks * 64))
+			break ;
+	}
+	int i = 0;
+	while (i < (((int)game->player.py / 64 - checks - 1)) * 64 + (int)game->player.py % 64)
+	{
+		mlx_put_image_to_window(game->mlx, game->win, game->red_px,
+		game->player.px + 3, game->player.py - i);
+		i++;
+	}
+}
+
+void	draw_map(t_game *game)
+{
+	int	size = 64;
+
+	for (int row = 0; game->map[row]; row++)
+		for (int col = 0; game->map[row][col]; col++)
+	{
+		if (game->map[row][col] == '1')
+		{
+			mlx_put_image_to_window(game->mlx, game->win, game->wall,
+			col * size, row * size);
+		}
+		else
+		{
+			mlx_put_image_to_window(game->mlx, game->win, game->floor,
+			col * size, row * size);
+		}
+	}
+}
 int	handle_keypress(int key, t_game *game)
 {
-	int	speed = 4;
+	float	speed = 8.0;
 
 	if (key == XK_Escape)
 		mlx_loop_end(game->mlx);
-	else if (key == XK_w || key == XK_z || key == XK_Up)
-		game->player.py -= speed;
-	else if (key == XK_s || key == XK_Down)
-		game->player.py += speed;
-	else if (key == XK_a || key == XK_q || key == XK_Left)
-		game->player.px -= speed;
-	else if (key == XK_d || key == XK_Right)
-		game->player.px += speed;
+	if (key == XK_w || key == XK_z || key == XK_Up)
+		if (!is_wall(game, game->player.px, game->player.py - speed))
+			game->player.py -= speed;
+	if (key == XK_s || key == XK_Down)
+		if (!is_wall(game, game->player.px, game->player.py + speed))
+			game->player.py += speed;
+	if (key == XK_a || key == XK_q || key == XK_Left)
+		if (!is_wall(game, game->player.px - speed, game->player.py))
+			game->player.px -= speed;
+	if (key == XK_d || key == XK_Right)
+		if (!is_wall(game, game->player.px + speed, game->player.py))
+			game->player.px += speed;
 	return (0);
 }
 
@@ -37,12 +98,14 @@ int	handle_close(t_game *game)
 
 int	handle_loop(t_game *game)
 {
+	draw_map(game);
 	mlx_put_image_to_window(game->mlx, game->win, game->player.sprite,
 			game->player.px, game->player.py);
+	//draw_line(game);
 	return (0);
 }
 
-int	play_game()
+int	play_game(char **map)
 {
 	t_game	game;
 
@@ -62,10 +125,15 @@ int	play_game()
 	}
 	
 	int		s;
-	game.player.sprite = mlx_xpm_file_to_image(game.mlx, "textures/player3.xpm", &s, &s);
-	game.player.px = 100;
-	game.player.py = 100;
-	if (!game.player.sprite)
+	game.player.sprite = mlx_xpm_file_to_image(game.mlx, "sprites/player_box.xpm", &s, &s);
+	game.wall = mlx_xpm_file_to_image(game.mlx, "textures/nwall64.xpm", &s, &s);
+	game.floor = mlx_xpm_file_to_image(game.mlx, "textures/nfloor64.xpm", &s, &s);
+	game.red_px = mlx_xpm_file_to_image(game.mlx, "sprites/cyan_px.xpm", &s, &s);
+	
+	game.player.px = 100.0;
+	game.player.py = 100.0;
+	game.map = map;
+	if (!game.player.sprite) // !floor !wall
 	{
 		mlx_destroy_window(game.mlx, game.win);
 		mlx_destroy_display(game.mlx);
@@ -82,6 +150,12 @@ int	play_game()
 
 	if (game.player.sprite)
 		mlx_destroy_image(game.mlx, game.player.sprite);
+	if (game.wall)
+		mlx_destroy_image(game.mlx, game.wall);
+	if (game.floor)
+		mlx_destroy_image(game.mlx, game.floor);
+	if (game.red_px)
+		mlx_destroy_image(game.mlx, game.red_px);
 	mlx_destroy_window(game.mlx, game.win);
 	mlx_destroy_display(game.mlx);
 	free(game.mlx);
@@ -90,6 +164,14 @@ int	play_game()
 
 int	main(void)
 {
-	//char *map[] = {"111111", "100001", "100001", "1000N1", "111111", NULL};
-	play_game();
+	char *map[] = {"11111111",
+				   "10100001", 
+				   "10100001", 
+				   "10100001", 
+				   "10000001", 
+				   "10000101", 
+				   "10000001", 
+				   "11111111", 
+				   NULL};
+	play_game(map);
 }
