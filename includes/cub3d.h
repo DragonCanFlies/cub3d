@@ -6,7 +6,7 @@
 /*   By: latabagl <latabagl@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 09:42:07 by latabagl          #+#    #+#             */
-/*   Updated: 2025/12/10 15:21:08 by latabagl         ###   ########.fr       */
+/*   Updated: 2025/12/10 17:06:51 by latabagl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,9 @@ typedef struct s_player
 	void		*sprite;
 	double			px;
 	double			py;
+	double			pdx; // delta x
+	double			pdy;
+	double			pa; // angle
 }				t_player;
 
 typedef struct s_game

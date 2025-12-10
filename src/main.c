@@ -6,7 +6,7 @@
 /*   By: latabagl <latabagl@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/05 09:43:29 by latabagl          #+#    #+#             */
-/*   Updated: 2025/12/10 16:57:46 by latabagl         ###   ########.fr       */
+/*   Updated: 2025/12/10 17:39:20 by latabagl         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,24 +69,57 @@ void	draw_map(t_game *game)
 		}
 	}
 }
+// int	handle_keypress(int key, t_game *game)
+// {
+// 	float	speed = 8.0;
+
+// 	if (key == XK_Escape)
+// 		mlx_loop_end(game->mlx);
+// 	if (key == XK_w || key == XK_z || key == XK_Up)
+// 		if (!is_wall(game, game->player.px, game->player.py - speed))
+// 			game->player.py -= speed;
+// 	if (key == XK_s || key == XK_Down)
+// 		if (!is_wall(game, game->player.px, game->player.py + 4 + speed))
+// 			game->player.py += speed;
+// 	if (key == XK_a || key == XK_q || key == XK_Left)
+// 		if (!is_wall(game, game->player.px - speed, game->player.py))
+// 			game->player.px -= speed;
+// 	if (key == XK_d || key == XK_Right)
+// 		if (!is_wall(game, game->player.px + 4 + speed, game->player.py))
+// 			game->player.px += speed;
+// 	return (0);
+// }
+
 int	handle_keypress(int key, t_game *game)
 {
-	float	speed = 8.0;
-
 	if (key == XK_Escape)
 		mlx_loop_end(game->mlx);
 	if (key == XK_w || key == XK_z || key == XK_Up)
-		if (!is_wall(game, game->player.px, game->player.py - speed))
-			game->player.py -= speed;
+	{
+		game->player.px += game->player.pdx;
+		game->player.py += game->player.pdy;
+	}
 	if (key == XK_s || key == XK_Down)
-		if (!is_wall(game, game->player.px, game->player.py + speed))
-			game->player.py += speed;
+	{
+		game->player.px -= game->player.pdx;
+		game->player.py -= game->player.pdy;
+	}
 	if (key == XK_a || key == XK_q || key == XK_Left)
-		if (!is_wall(game, game->player.px - speed, game->player.py))
-			game->player.px -= speed;
+	{
+		game->player.pa += 0.1;
+		if (game->player.pa > 2 * PI)
+			game->player.pa -= 2 * PI;
+		game->player.pdx = cos(game->player.pa);
+		game->player.pdy = sin(game->player.pa);
+	}
 	if (key == XK_d || key == XK_Right)
-		if (!is_wall(game, game->player.px + speed, game->player.py))
-			game->player.px += speed;
+	{
+		game->player.pa -= 0.1;
+		if (game->player.pa < 0)
+			game->player.pa += 2 * PI;
+		game->player.pdx = cos(game->player.pa);
+		game->player.pdy = sin(game->player.pa);
+	}
 	return (0);
 }
 
@@ -132,6 +165,9 @@ int	play_game(char **map)
 	
 	game.player.px = 100.0;
 	game.player.py = 100.0;
+	game.player.pdx = 0;
+	game.player.pdy = 1;
+	game.player.pa = PI / 2;
 	game.map = map;
 	if (!game.player.sprite) // !floor !wall
 	{
